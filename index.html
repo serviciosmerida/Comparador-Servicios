@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparador de servicios · Servigrúas Mérida</title>
+<link rel="icon" type="image/png" sizes="512x512" href="logo_comparador.png">
+<link rel="apple-touch-icon" sizes="512x512" href="logo_comparador.png">
+<link rel="manifest" href="manifest_comparador.json">
+<meta name="theme-color" content="#1A1A1A">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--bg:#F7F5F0;--card:#fff;--ink:#1A1A1A;--mut:#888580;--line:#EEECE8;--gm:#D5D2CB;--olive:#4A5240;--olive-d:#3b4232;--olive2:#EFF1EB;--red:#B03A2E;--red2:#FDECEA;--amb:#C8860A;--amb2:#FFF8EC;--grn:#2E7D32;--grn2:#EDF7EE}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Inter',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.topbar{background:var(--ink);color:#fff;padding:.9rem 2rem}
+.tb-brand{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:2px}.tb-brand span{color:var(--amb)}
+.tb-sub{font-size:.7rem;color:#aaa;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+main{max-width:980px;margin:0 auto;padding:1.5rem 1.2rem 3.5rem}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+@media(max-width:760px){.steps{grid-template-columns:1fr}.topbar{padding:.8rem 1rem}}
+.card{background:#fff;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;padding:0 0 1.1rem}
+.card>:not(.ch){margin-left:1.25rem;margin-right:1.25rem}
+.card>select{width:calc(100% - 2.5rem)}
+.ch{display:flex;align-items:center;gap:.7rem;padding:.75rem 1.25rem;background:var(--bg);border-bottom:1.5px solid var(--line);margin-bottom:.2rem}
+.ch h2{margin:0;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:1.5px;color:var(--olive)}
+.num{width:24px;height:24px;border-radius:50%;background:var(--olive);color:#fff;font-size:.75rem;font-weight:700;display:grid;place-items:center}
+label{display:block;font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--olive);font-weight:600;margin-top:.9rem;margin-bottom:.35rem}
+input,select,textarea{width:100%;padding:.5rem .65rem;border:1.5px solid var(--gm);border-radius:8px;font:inherit;font-size:.88rem;background:#fff;color:var(--ink);transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--olive)}
+textarea{height:150px;font:12.5px/1.45 ui-monospace,Consolas,monospace;resize:vertical}
+.row{display:flex;gap:.7rem}.row>*{flex:1;min-width:0}
+.drop{position:relative;display:block;border:1.5px dashed var(--gm);border-radius:10px;background:var(--bg);padding:1.2rem .9rem;text-align:center;cursor:pointer;text-transform:none;letter-spacing:0;transition:background .15s,border-color .15s}
+.drop:hover,.drop:focus-within{background:var(--olive2);border-color:var(--olive)}
+.drop input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0}
+.drop b{display:block;font-size:.88rem;color:var(--olive)}
+.drop span{font-size:.76rem;color:var(--mut);font-weight:400}
+#fname{display:block;margin-top:6px;font-size:.8rem;font-weight:600;color:var(--ink);word-break:break-all}
+.stat{font-size:.78rem;margin-top:.7rem;color:var(--olive);font-weight:600}.stat:empty{display:none}
+.maps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:.7rem}
+@media(max-width:760px){.maps{grid-template-columns:1fr}}
+.maps label{margin:0 0 2px;font-size:.6rem}.maps select{padding:.3rem .45rem;font-size:.82rem}
+button{font:600 .85rem 'Inter',sans-serif;border:1.5px solid var(--olive);border-radius:8px;padding:.6rem 1.1rem;cursor:pointer;background:var(--olive);color:#fff;letter-spacing:.3px;transition:background .15s}
+button:hover{background:var(--olive-d)}
+button.sec{background:#fff;color:var(--olive)}button.sec:hover{background:var(--olive2)}
+button:focus-visible{outline:2px solid var(--olive);outline-offset:2px}
+.go{margin:1.1rem 0 .5rem;display:flex;gap:.6rem;flex-wrap:wrap}
+.go #cmp{padding:.7rem 1.8rem;font-size:.95rem}
+.empty{margin-top:.9rem;padding:2rem 1.2rem;text-align:center;color:var(--mut);background:#fff;border:1.5px dashed var(--gm);border-radius:14px;font-size:.88rem}
+.warn{margin:.8rem 0 0;padding:.5rem .9rem;background:var(--amb2);color:var(--amb);border-radius:8px;font-size:.82rem;font-weight:600}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin:1rem 0 .3rem}
+@media(max-width:760px){.sum{grid-template-columns:1fr 1fr}}
+.sum div{background:#fff;border:1.5px solid var(--line);border-top:3px solid var(--olive);border-radius:12px;padding:.7rem .9rem}
+.sum b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:1.9rem;line-height:1.15;letter-spacing:.5px;color:var(--olive);font-variant-numeric:tabular-nums}
+.sum span{font-size:.7rem;color:var(--mut);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.sum .bad{background:var(--red2);border-color:#f1c8c3;border-top-color:var(--red)}.sum .bad b{color:var(--red)}
+.sum .good{background:var(--grn2);border-color:#c5e3c8;border-top-color:var(--grn)}.sum .good b{color:var(--grn)}
+section{margin-top:1.4rem}
+section h3{margin:0 0 .5rem;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:1.5px;color:var(--olive);display:flex;align-items:center;gap:.5rem}
+.n{min-width:24px;text-align:center;font:700 .72rem 'Inter',sans-serif;letter-spacing:0;background:var(--red2);color:var(--red);border-radius:20px;padding:.1rem .55rem}
+.ok{display:inline-block;color:var(--grn);background:var(--grn2);font-size:.78rem;font-weight:600;border-radius:20px;padding:.25rem .8rem;margin:0}
+.hint{font-size:.76rem;color:var(--mut);margin:.4rem .1rem 0}
+.tw{overflow-x:auto;background:#fff;border:1.5px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.83rem;font-variant-numeric:tabular-nums}
+th,td{padding:.5rem .8rem;text-align:left;white-space:nowrap}
+th{background:var(--bg);color:var(--mut);font-size:.64rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;border-bottom:1.5px solid var(--line)}
+td{border-bottom:1px solid var(--line)}
+tbody tr:hover td{background:var(--olive2)}
+tr:last-child td{border-bottom:0}
+th.r,td.r{text-align:right}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="tb-brand">Servigrúas <span>Mérida</span></div><div class="tb-sub">Comparador de servicios</div></div>
+<main>
+<div class="steps">
+  <div class="card">
+    <div class="ch"><span class="num">1</span><h2>Reporte de la aseguradora</h2></div>
+    <label for="aseg">Aseguradora</label>
+    <select id="aseg"><option>General</option><option>Universales</option></select>
+    <div class="row">
+      <div><label for="desde">Desde</label><input type="date" id="desde"></div>
+      <div><label for="hasta">Hasta</label><input type="date" id="hasta"></div>
+    </div>
+    <label for="file">Archivo del reporte</label>
+    <label class="drop"><input type="file" id="file" accept=".xls,.xlsx,.csv,.pdf"><b>Arrastra el archivo o haz clic para elegirlo</b><span>Excel, CSV o PDF</span><span id="fname"></span></label>
+    <div class="stat" id="insStat"></div>
+    <div class="maps" id="maps" hidden></div>
+  </div>
+  <div class="card">
+    <div class="ch"><span class="num">2</span><h2>Tus datos (Google Sheets)</h2></div>
+    <div class="row">
+      <div><label for="mineF">Fecha</label><textarea id="mineF" placeholder="30/09/2026&#10;30/09/2026"></textarea></div>
+      <div><label for="mineA">Asistencia</label><textarea id="mineA" placeholder="435583&#10;435486"></textarea></div>
+      <div><label for="mineM">Monto</label><textarea id="mineM" placeholder="240.00&#10;680.00"></textarea></div>
+    </div>
+    <div class="stat" id="mineStat"></div>
+  </div>
+</div>
+<div class="go"><button id="cmp">Comparar</button><button class="sec" id="copyMail" hidden>Copiar texto del correo</button></div>
+<div id="out"><div class="empty">Sube el reporte, pega tus datos y presiona <b>Comparar</b>. Aquí aparecerán los totales y las diferencias.</div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let mine=[],ins=[],tbl=null,R=null;
+const pad=n=>String(n).padStart(2,'0'),iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const t0=new Date();$('desde').value=iso(new Date(t0.getFullYear(),t0.getMonth()-1,1));$('hasta').value=iso(new Date(t0.getFullYear(),t0.getMonth(),0));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=s=>{const v=parseFloat(String(s??'').replace(/[^\d.\-]/g,''));return isNaN(v)?0:v};
+const q=n=>'Q '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fd=d=>d?d.toLocaleDateString('es-GT'):'sin fecha';
+function toDate(v){if(!v)return null;if(v instanceof Date)return isNaN(v)?null:new Date(v.getUTCFullYear(),v.getUTCMonth(),v.getUTCDate());const s=String(v);let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],m[2]-1,+m[3]);m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(+m[3],m[2]-1,+m[1]):null}
+const sum=a=>a.reduce((s,r)=>s+r.monto,0);
+// Avisa que lo que se ve ya no corresponde a los datos cargados
+function stale(){if(R&&!$('out').querySelector('.warn'))$('out').insertAdjacentHTML('afterbegin','<p class="warn">Cambiaste datos, archivo o periodo. Presiona <b>Comparar</b> para actualizar el resultado.</p>')}
+
+// ---- Tus datos
+function parseMine(){
+  mine=[];
+  const col=id=>$(id).value.replace(/\r/g,'').split('\n');
+  const F=col('mineF'),A=col('mineA'),M=col('mineM');
+  for(let i=0;i<Math.max(F.length,A.length,M.length);i++){
+    const id=(A[i]||'').trim();if(!/^\d{5,8}$/.test(id))continue;
+    const m=(M[i]||'').trim();if(!/\d/.test(m))continue;
+    mine.push({id,monto:num(m),fecha:toDate((F[i]||'').trim())});
+  }
+  $('mineStat').textContent=mine.length?`${mine.length} filas leídas · ${q(sum(mine))}`:'';
+}
+['mineF','mineA','mineM'].forEach(id=>$(id).addEventListener('input',()=>{parseMine();stale()}));
+$('desde').addEventListener('change',stale);$('hasta').addEventListener('change',stale);$('aseg').addEventListener('change',stale);
+// ---- Archivo de la aseguradora
+$('file').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;$('fname').textContent=f.name;$('insStat').textContent='Leyendo…';$('maps').hidden=true;
+  try{
+    if(/\.pdf$/i.test(f.name)){
+      const r=await readPdf(f);ins=r.rows;tbl=null;$('insStat').textContent=pdfMsg(r)||'No encontré servicios en el PDF';
+    }
+    else{await readSheet(f);$('insStat').textContent=`${ins.length} filas leídas · ${q(sum(ins))}`}
+  }catch(err){ins=[];$('insStat').textContent='No se pudo leer el archivo: '+err.message}
+  stale();
+};
+async function readSheet(f){
+  const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true});
+  const a=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:null});
+  let h=a.findIndex(r=>r.filter(c=>c!=null).length>=4&&r.some(c=>/^(no\.? ?(de )?)?(asistencia|expediente|siniestro)$/i.test(String(c??'').trim())));
+  if(h<0)throw new Error('no encontré la fila de encabezados (Asistencia)');
+  const hd=a[h].map(x=>String(x??'').trim());
+  const find=(...res)=>{for(const re of res){const i=hd.findIndex(x=>re.test(x));if(i>=0)return i}return -1};
+  const m={id:find(/asistencia|expediente|siniestro/i),monto:find(/tarifa/i,/excedente/i,/monto|total|valor|importe/i),fecha:find(/^fecha/i)};
+  tbl={hd,rows:a.slice(h+1),m};drawMaps();buildIns();
+}
+function drawMaps(){
+  const L={id:'Asistencia',monto:'Monto',fecha:'Fecha'};
+  $('maps').innerHTML=Object.keys(L).map(k=>`<div><label>${L[k]}</label><select data-k="${k}"><option value="-1">(ninguna)</option>${tbl.hd.map((x,i)=>`<option value="${i}"${tbl.m[k]===i?' selected':''}>${esc(x)||'col '+(i+1)}</option>`).join('')}</select></div>`).join('');
+  $('maps').hidden=false;
+  $('maps').querySelectorAll('select').forEach(s=>s.onchange=()=>{tbl.m[s.dataset.k]=+s.value;buildIns();$('insStat').textContent=`${ins.length} filas leídas · ${q(sum(ins))}`;stale()});
+}
+function buildIns(){
+  const{rows,m}=tbl,g=(r,k)=>m[k]>=0?r[m[k]]:null;
+  ins=rows.map(r=>({id:String(g(r,'id')??'').replace(/\.0$/,'').trim(),monto:num(g(r,'monto')),fecha:toDate(g(r,'fecha'))})).filter(r=>/^\d{5,8}$/.test(r.id));
+}
+function parsePdfPages(pages){
+  const rows=[],totals={};let lote='';
+  const isNum=s=>/^\d{5,7}$/.test(s),isDec=s=>/^\d{1,3}(,\d{3})*\.\d{2}$/.test(s),isDate=s=>/^\d{2}\/\d{2}\/\d{4}$/.test(s);
+  pages.forEach(its=>{
+    const txt=[...its].sort((a,b)=>b.y-a.y||a.x-b.x).map(i=>i.s).join(' ');
+    const lm=txt.match(/Lote:\s*(\d{4,6})/);if(lm)lote=lm[1];
+    its.filter(i=>isDate(i.s)).forEach(d=>{
+      const ln=its.filter(i=>Math.abs(i.y-d.y)<=3).sort((a,b)=>a.x-b.x);
+      const ids=ln.filter(i=>isNum(i.s)&&i.x<d.x),cost=ln.find(i=>isDec(i.s)&&i.x>d.x);
+      // columnas del PDF: Servicio (primer número) y Boleta (el pegado a la fecha); se usa Servicio
+      if(ids.length&&cost)rows.push({id:ids[0].s,monto:num(cost.s),fecha:toDate(d.s),lote});
+    });
+    its.filter(i=>/^TOTAL/i.test(i.s)).forEach(t=>{
+      const v=its.filter(i=>isDec(i.s)&&Math.abs(i.y-t.y)<=3).sort((a,b)=>a.x-b.x).pop();if(v)totals[lote]=num(v.s);
+    });
+  });
+  return{rows,totals};
+}
+function pdfMsg({rows,totals}){
+  const L=[...new Set(rows.map(r=>r.lote))];
+  return L.map(l=>{const rs=rows.filter(r=>r.lote===l),t=sum(rs),pt=totals[l];
+    return `Lote ${l}: ${rs.length} filas · ${q(t)} `+(pt==null?'(el PDF no trae total para verificar)':Math.abs(pt-t)<.005?'✓ coincide con el total del PDF':`⚠ el PDF dice ${q(pt)}, revisa`)}).join(' | ');
+}
+async function readPdf(f){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise,pages=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const tc=await(await pdf.getPage(p)).getTextContent();
+    pages.push(tc.items.map(it=>({s:it.str.trim(),x:it.transform[4],y:it.transform[5]})).filter(i=>i.s));
+  }
+  return parsePdfPages(pages);
+}
+
+// ---- Comparación
+// Un dígito distinto, un dígito de más/menos, o dos dígitos seguidos invertidos
+const near=(a,b)=>{if(a===b)return false;if(a.length===b.length){let d=[];for(let i=0;i<a.length;i++)if(a[i]!==b[i])d.push(i);
+    return d.length===1||(d.length===2&&d[1]===d[0]+1&&a[d[0]]===b[d[1]]&&a[d[1]]===b[d[0]])}
+  if(Math.abs(a.length-b.length)!==1)return false;const[s,l]=a.length<b.length?[a,b]:[b,a];for(let i=0;i<l.length;i++)if(l.slice(0,i)+l.slice(i+1)===s)return true;return false};
+const group=a=>{const m=new Map();a.forEach(r=>{if(!m.has(r.id))m.set(r.id,[]);m.get(r.id).push(r)});return m};
+function compare(){
+  const D1=new Date($('desde').value+'T00:00:00'),D2=new Date($('hasta').value+'T23:59:59');
+  const gm=group(mine),gi=group(ins),diff=[];let onlyM=[],onlyI=[];
+  new Set([...gm.keys(),...gi.keys()]).forEach(id=>{
+    let a=[...(gm.get(id)||[])],b=[...(gi.get(id)||[])];
+    a=a.filter(x=>{const k=b.findIndex(y=>y.monto===x.monto);if(k>=0){b.splice(k,1);return false}return true});
+    while(a.length&&b.length)diff.push({id,mio:a.shift(),ins:b.shift()});
+    onlyM.push(...a);onlyI.push(...b);
+  });
+  const typos=[];
+  onlyM=onlyM.filter(x=>{const k=onlyI.findIndex(y=>y.monto===x.monto&&near(x.id,y.id));if(k>=0){typos.push({mio:x,ins:onlyI.splice(k,1)[0]});return false}return true});
+  const fuera=[...ins.map(r=>({...r,l:'Aseguradora'})),...mine.map(r=>({...r,l:'Mío'}))].filter(r=>r.l==='Aseguradora'?(!r.fecha||r.fecha<D1||r.fecha>D2):(r.fecha&&(r.fecha<D1||r.fecha>D2)));
+  R={diff,onlyM,onlyI,typos,fuera,D1,D2};
+}
+function render(){
+  const tb=(h,rows)=>{const mc=h.map((_,i)=>rows.length&&/^Q /.test(String(rows[0][i])));return `<div class="tw"><table><thead><tr>${h.map((x,i)=>`<th${mc[i]?' class="r"':''}>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${mc[i]?' class="r"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`};
+  const sec=(t,rows,h,hint)=>`<section><h3>${t}${rows.length?`<span class="n">${rows.length}</span>`:''}</h3>${rows.length?tb(h,rows):'<p class="ok">Sin diferencias.</p>'}${hint&&rows.length?`<p class="hint">${hint}</p>`:''}</section>`;
+  const tm=sum(mine),ti=sum(ins),d=ti-tm,ok=Math.abs(d)<.005;
+  $('out').innerHTML=`<div class="sum"><div><b>${q(tm)}</b><span>Tu total · ${mine.length} filas</span></div><div><b>${q(ti)}</b><span>Aseguradora · ${ins.length} filas</span></div><div class="${ok?'good':'bad'}"><b>${q(d)}</b><span>${ok?'Cuadra':'Diferencia (aseguradora − tuyo)'}</span></div><div><b>${R.diff.length+R.onlyM.length+R.onlyI.length+R.typos.length}</b><span>Asistencias por revisar</span></div></div>`
+  +sec('Monto distinto',R.diff.map(x=>[x.id,fd(x.ins.fecha),q(x.mio.monto),q(x.ins.monto),q(x.ins.monto-x.mio.monto)]),['Asistencia','Fecha','Tuyo','Aseguradora','Dif.'])
+  +sec('Están en tus datos y no en el reporte',R.onlyM.map(x=>[x.id,fd(x.fecha),q(x.monto)]),['Asistencia','Fecha','Monto'])
+  +sec('Están en el reporte y no en tus datos',R.onlyI.map(x=>[x.id,fd(x.fecha),q(x.monto)]),['Asistencia','Fecha','Monto'],'Las de Q 0.00 no afectan el total.')
+  +sec('Posible error de digitación en el número',R.typos.map(x=>[x.mio.id,x.ins.id,q(x.mio.monto)]),['Tuyo','Aseguradora','Monto'],'Mismo monto y números que difieren en un dígito o con dos dígitos invertidos.')
+  +sec('Fuera del periodo o sin fecha',R.fuera.map(x=>[x.l,x.id,fd(x.fecha),q(x.monto)]),['Lado','Asistencia','Fecha','Monto']);
+  $('copyMail').hidden=false;
+}
+$('cmp').onclick=()=>{
+  if(!$('desde').value||!$('hasta').value){$('out').innerHTML='<p class="hint">Escribe las fechas Desde y Hasta del periodo antes de comparar.</p>';return}
+  parseMine();
+  if(!mine.length||!ins.length){$('out').innerHTML='<p class="hint">Carga el reporte de la aseguradora y pega tus datos antes de comparar.</p>';return}
+  compare();render();
+};
+
+// ---- Correo y Excel
+async function copiar(t){
+  try{await navigator.clipboard.writeText(t);return true}catch(e){}
+  try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();return ok}catch(e){return false}
+}
+$('copyMail').onclick=async()=>{
+  const A=$('aseg').value;const any=R.diff.length+R.typos.length+R.onlyM.length;
+  let t=`Buen día.\nHe revisado el reporte de ${A} del ${fd(R.D1)} al ${fd(R.D2)}`+(any?' y he notado diferencias con nuestros registros.\n\nA continuación, le detallo la información.\n':' y no encontré diferencias con nuestros registros.\n');
+  if(R.diff.length){t+='\nServicios con monto distinto:\n';R.diff.forEach(x=>t+=`\nNo. de Asistencia: ${x.id}\nMonto según nuestro registro: ${q(x.mio.monto)}\nMonto en el reporte: ${q(x.ins.monto)}\n`)}
+  if(R.typos.length){t+='\nServicios con número de asistencia distinto:\n';R.typos.forEach(x=>t+=`\nNo. de Asistencia en nuestro registro: ${x.mio.id}\nNo. de Asistencia en el reporte: ${x.ins.id}\nMonto correspondiente: ${q(x.mio.monto)}\n`)}
+  if(R.onlyM.length){t+='\nServicios que realizamos y no aparecen en su listado:\n';R.onlyM.forEach(x=>t+=`\nNo. de Asistencia: ${x.id}\nMonto correspondiente: ${q(x.monto)}\n${x.fecha?'Fecha del servicio: '+fd(x.fecha)+'\n':''}`)}
+  t+='\nQuedo atenta a su confirmación.\n\nSaludos cordiales,\nAndrea\nServigrúas Mérida';
+  const ok=await copiar(t);
+  $('copyMail').textContent=ok?'Copiado':'No se pudo copiar';setTimeout(()=>$('copyMail').textContent='Copiar texto del correo',1800);
+};
+</script>
+</body>
+</html>
