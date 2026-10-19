@@ -125,7 +125,7 @@ function parseMine(){
   for(let i=0;i<Math.max(F.length,A.length,M.length);i++){
     const id=(A[i]||'').trim();if(!/^\d{5,8}$/.test(id))continue;
     const m=(M[i]||'').trim();if(!/\d/.test(m))continue;
-    mine.push({id,monto:num(m),fecha:toDate((F[i]||'').trim())});
+    mine.push({id,monto:Math.abs(num(m)),fecha:toDate((F[i]||'').trim())});
   }
   $('mineStat').textContent=mine.length?`${mine.length} filas leídas · ${q(sum(mine))}`:'';
 }
